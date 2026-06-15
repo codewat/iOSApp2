@@ -6,40 +6,84 @@
 //
 
 import SwiftUI
+import PhotosUI
 
 struct ItemDetailView: View {
-    @ObservedObject var viewModel: ScavengerViewModel // Used to call the update function
-    let itemId: UUID // I-pass lang ang ID
+    @ObservedObject var viewModel: ScavengerViewModel
+    let itemId: UUID
+    
+    // State to handle the photo picker
+    @State private var selectedItem: PhotosPickerItem? = nil
+    
+    @State private var showCamera = false
+    
     var item: ScavengerItem {
         viewModel.items.first(where: { $0.id == itemId }) ?? ScavengerItem(title: "Error", clue: "Not found")
     }
+    
     var body: some View {
         VStack(spacing: 20) {
+            
+            
+            
             Text(item.title)
                 .font(.largeTitle)
                 .bold()
             
+            // Display the photo if it exists
+            if let photo = item.photo {
+                Image(uiImage: photo)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(height: 200)
+            }
+            
+
+            
             Text("Clue:")
                 .font(.headline)
-            
+            Spacer()
+
             Text(item.clue)
                 .padding()
             
             Spacer()
+            Button(action: { showCamera = true }) {
+                Label("Take Photo", systemImage: "camera")
+            }
+            .sheet(isPresented: $showCamera) {
+                CameraPicker(selectedImage: .init(get: { item.photo }, set: { newImage in
+                    if let image = newImage { viewModel.updateItemPhoto(id: itemId, photo: image) }
+                }))
+            }
             
-            // Button to mark item as found using the ViewModel function
-            // In ItemDetailView.swift
+            Spacer()
 
+            PhotosPicker(selection: $selectedItem, matching: .images) {
+                Label("Select Photo", systemImage: "photo.badge.plus")
+            }
+            Spacer()
+
+            // Button to toggle status
             Button(action: {
-                viewModel.toggleFoundStatus(id: itemId) // Call the toggle function
+                viewModel.toggleFoundStatus(id: itemId)
             }) {
-                // Dynamic text based on current status
                 Text(item.isFound ? "Found! (Tap to Unmark)" : "Mark as Found")
             }
             .scavengerButtonStyle(isFound: item.isFound)
         }
         .padding()
         .navigationTitle("Clue Detail")
+        .onChange(of: selectedItem) { _, newItem in
+            Task {
+                if let newItem = newItem {
+                    if let data = try? await newItem.loadTransferable(type: Data.self),
+                       let uiImage = UIImage(data: data) {
+                        viewModel.updateItemPhoto(id: itemId, photo: uiImage)
+                    }
+                }
+            }
+        }
     }
 }
 

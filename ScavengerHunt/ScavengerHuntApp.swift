@@ -1,3 +1,4 @@
+
 //
 //  ScavengerHuntApp.swift
 //  ScavengerHunt
@@ -9,9 +10,25 @@ import SwiftUI
 
 @main
 struct ScavengerHuntApp: App {
+    @State private var showSplash = true
+    
     var body: some Scene {
         WindowGroup {
-            ContentView()
-        }
-    }
-}
+            ZStack {
+                            ContentView()
+                            
+                            if showSplash {
+                                SplashView()
+                                    .transition(.opacity)
+                            }
+                        }
+                        .onAppear {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                withAnimation {
+                                    showSplash = false
+                                }
+                            }
+                        }
+                    }
+                }
+            }

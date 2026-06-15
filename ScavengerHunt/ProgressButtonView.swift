@@ -20,11 +20,13 @@ struct ProgressButtonView: View {
             
             Spacer()
             
-            Text(viewModel.discountCode)
-                .font(.caption)
-                .padding(8)
-                .background(Color.yellow.opacity(0.2))
-                .cornerRadius(8)
+            if !viewModel.discountCode.isEmpty {
+                Text(viewModel.discountCode)
+                    .font(.caption)
+                    .padding(8)
+                    .background(Color.yellow.opacity(0.2))
+                    .cornerRadius(8)
+            }
         }
         .padding()
         .background(Color(.systemGray6))

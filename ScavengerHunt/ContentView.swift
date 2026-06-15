@@ -17,18 +17,16 @@ struct ContentView: View {
                 // Here is your custom progress component
                 ProgressButtonView(viewModel: viewModel)
                 
-                List(viewModel.items.indices, id: \.self) { index in
-                    NavigationLink(destination: ItemDetailView(viewModel: viewModel, itemId: viewModel.items[index].id)) {
+                List(viewModel.items) { item in
+                    NavigationLink(destination: ItemDetailView(viewModel: viewModel, itemId: item.id)) {
                         HStack {
-                            Text(viewModel.items[index].title)
+                            Text(item.title)
                             Spacer()
-                            if viewModel.items[index].isFound {
+                            if item.isFound {
                                 Image(systemName: "checkmark.circle.fill")
                                     .foregroundColor(.green)
                             }
-                            
                         }
-                        
                     }
                 }
                 
